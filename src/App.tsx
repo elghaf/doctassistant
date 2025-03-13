@@ -1,56 +1,123 @@
-import { Suspense } from "react";
-import { Route, Routes, useRoutes } from "react-router-dom";
+import { Suspense, lazy } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import Home from "./components/home";
 import routes from "tempo-routes";
-import Dashboard from "./pages/dashboard";
-import DashboardPaid from "./pages/dashboard-paid";
-import Form from "./pages/form";
-import Home from "./pages/home";
-import NotSubscribed from "./pages/not-subscribed";
-import Success from "./pages/success";
-import ProtectedRoute from "./components/wrappers/ProtectedRoute";
+import { useRoutes } from "react-router-dom";
+import PatientsPage from "./pages/patients";
+import PatientDetailPage from "./pages/patients/[id]";
+import AppointmentsPage from "./pages/appointments";
+import ReportsPage from "./pages/reports";
+import AIAssistantPage from "./pages/ai-assistant";
+import AnalyticsPage from "./pages/analytics";
+import LoginPage from "./pages/auth/login";
+import RegisterPage from "./pages/auth/register";
+import VerifyEmailPage from "./pages/auth/verify-email";
+
+// Lazy load the DataManagementPage
+const DataManagementPage = lazy(() => import("./pages/data-management"));
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/auth/login" />;
+  }
+
+  return <>{children}</>;
+};
 
 function App() {
+  const tempoRoutes =
+    import.meta.env.VITE_TEMPO === "true" ? useRoutes(routes) : null;
+
   return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/dashboard"
-            element={
-              <Dashboard />
-            }
-          />
-          <Route
-            path="/dashboard-paid"
-            element={
-              <ProtectedRoute>
-                <DashboardPaid />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/form"
-            element={
-              <Form />
-            }
-          />
-          <Route
-            path="/success"
-            element={
-              <Success />
-            }
-          />
-          <Route
-            path="/not-subscribed"
-            element={
-              <NotSubscribed />
-            }
-          />
-        </Routes>
-        {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
-      </>
-    </Suspense >
+    <AuthProvider>
+      <Suspense fallback={<p>Loading...</p>}>
+        <>
+          {tempoRoutes}
+          <Routes>
+            {/* Auth routes */}
+            <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/auth/register" element={<RegisterPage />} />
+            <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+
+            {/* Protected routes */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients"
+              element={
+                <ProtectedRoute>
+                  <PatientsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients/:id"
+              element={
+                <ProtectedRoute>
+                  <PatientDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/appointments"
+              element={
+                <ProtectedRoute>
+                  <AppointmentsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ai-assistant"
+              element={
+                <ProtectedRoute>
+                  <AIAssistantPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute>
+                  <AnalyticsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/data-management"
+              element={
+                <ProtectedRoute>
+                  <DataManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            {import.meta.env.VITE_TEMPO === "true" && (
+              <Route path="/tempobook/*" />
+            )}
+          </Routes>
+        </>
+      </Suspense>
+    </AuthProvider>
   );
 }
 
