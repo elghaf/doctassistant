@@ -35,44 +35,8 @@ interface PatientReportViewerProps {
 }
 
 const PatientReportViewer = ({
-  reports = [
-    {
-      id: "rep-001",
-      title: "Complete Blood Count",
-      date: "2023-06-15",
-      type: "Lab Results",
-      summary:
-        "All blood cell counts within normal ranges. Hemoglobin at 14.2 g/dL, WBC at 7.5 x10^9/L, Platelets at 250 x10^9/L.",
-      aiSummary:
-        "Your blood test results are all within normal ranges, indicating good overall health. Your immune system appears to be functioning properly with normal white blood cell counts.",
-      status: "normal",
-      doctor: "Dr. Sarah Johnson",
-    },
-    {
-      id: "rep-002",
-      title: "Lipid Panel",
-      date: "2023-05-22",
-      type: "Lab Results",
-      summary:
-        "Total Cholesterol: 210 mg/dL (borderline high), LDL: 140 mg/dL (borderline high), HDL: 45 mg/dL (normal), Triglycerides: 150 mg/dL (normal).",
-      aiSummary:
-        "Your cholesterol levels are slightly elevated. Consider dietary changes to reduce saturated fat intake and increase exercise. Follow-up recommended in 3 months.",
-      status: "abnormal",
-      doctor: "Dr. Michael Chen",
-    },
-    {
-      id: "rep-003",
-      title: "Chest X-Ray",
-      date: "2023-04-10",
-      type: "Imaging",
-      summary:
-        "No acute cardiopulmonary process. Heart size normal. Lungs clear. No effusions or pneumothorax.",
-      aiSummary:
-        "Your chest X-ray shows normal heart and lung appearance with no signs of infection, fluid, or other abnormalities.",
-      status: "normal",
-      doctor: "Dr. Emily Rodriguez",
-    },
-  ],
+  reports = [],
+
   patientName = "John Doe",
   onDownload = (reportId) => console.log(`Downloading report ${reportId}`),
 }: PatientReportViewerProps) => {

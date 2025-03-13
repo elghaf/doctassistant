@@ -56,13 +56,17 @@ const Login = () => {
               Medical Office Portal
             </CardTitle>
             <CardDescription>
-              {activeTab === "login" ? "Sign in to access your portal" : "Create a new account"}
+              {activeTab === "login"
+                ? "Sign in to access your portal"
+                : "Create a new account"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs 
-              value={activeTab} 
-              onValueChange={(value) => setActiveTab(value as "login" | "register")}
+            <Tabs
+              value={activeTab}
+              onValueChange={(value) =>
+                setActiveTab(value as "login" | "register")
+              }
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-2">
@@ -70,14 +74,14 @@ const Login = () => {
                 <TabsTrigger value="register">Register</TabsTrigger>
               </TabsList>
               <TabsContent value="login" className="mt-4">
-                <LoginForm 
+                <LoginForm
                   onSubmit={handleLogin}
                   isLoading={isLoading}
                   error={error}
                 />
               </TabsContent>
               <TabsContent value="register" className="mt-4">
-                <RegisterForm 
+                <RegisterForm
                   onSubmit={handleRegister}
                   isLoading={isLoading}
                   error={error}

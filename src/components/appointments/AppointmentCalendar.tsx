@@ -40,33 +40,8 @@ interface AppointmentCalendarProps {
 }
 
 const AppointmentCalendar = ({
-  appointments = [
-    {
-      id: "1",
-      date: new Date(),
-      time: "10:00 AM",
-      doctor: "Dr. Sarah Johnson",
-      type: "Check-up",
-      status: "confirmed" as const,
-      notes: "Annual physical examination",
-    },
-    {
-      id: "2",
-      date: addDays(new Date(), 3),
-      time: "2:30 PM",
-      doctor: "Dr. Michael Chen",
-      type: "Follow-up",
-      status: "pending" as const,
-    },
-    {
-      id: "3",
-      date: addDays(new Date(), 7),
-      time: "11:15 AM",
-      doctor: "Dr. Emily Rodriguez",
-      type: "Consultation",
-      status: "confirmed" as const,
-    },
-  ],
+  appointments = [],
+
   onSchedule = () => {},
   onViewDetails = () => {},
 }: AppointmentCalendarProps) => {

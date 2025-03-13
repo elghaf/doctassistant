@@ -40,44 +40,8 @@ const QuestionnaireManager: React.FC<QuestionnaireManagerProps> = ({
   const [selectedQuestionnaire, setSelectedQuestionnaire] =
     useState<Questionnaire | null>(null);
 
-  // Mock questionnaires data
-  const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([
-    {
-      id: "q1",
-      title: "Annual Health Assessment",
-      description: "Complete your annual health assessment questionnaire",
-      status: "pending",
-      dueDate: "2023-06-15",
-      type: "health",
-    },
-    {
-      id: "q2",
-      title: "Post-Surgery Follow-up",
-      description:
-        "Please complete this questionnaire after your recent procedure",
-      status: "completed",
-      dueDate: "2023-05-20",
-      type: "followup",
-    },
-    {
-      id: "q3",
-      title: "Cardiology Specialist Referral",
-      description:
-        "Pre-appointment questionnaire for your cardiology consultation",
-      status: "overdue",
-      dueDate: "2023-05-01",
-      type: "specialist",
-    },
-    {
-      id: "q4",
-      title: "Medication Review",
-      description:
-        "Review your current medications and report any side effects",
-      status: "pending",
-      dueDate: "2023-06-30",
-      type: "health",
-    },
-  ]);
+  // Questionnaires data
+  const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
 
   const filteredQuestionnaires =
     activeTab === "all"

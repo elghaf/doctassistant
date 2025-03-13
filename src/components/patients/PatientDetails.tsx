@@ -36,18 +36,18 @@ interface PatientDetailsProps {
 
 const PatientDetails: React.FC<PatientDetailsProps> = ({
   patient = {
-    id: "P12345",
-    name: "Jane Smith",
-    age: 42,
-    gender: "Female",
-    email: "jane.smith@example.com",
-    phone: "(555) 123-4567",
-    address: "123 Main St, Anytown, USA",
-    medicalHistory: ["Hypertension", "Type 2 Diabetes", "Asthma"],
-    allergies: ["Penicillin", "Peanuts"],
-    medications: ["Lisinopril 10mg", "Metformin 500mg", "Albuterol inhaler"],
-    lastVisit: "2023-10-15",
-    upcomingAppointment: "2023-11-20 10:30 AM",
+    id: "",
+    name: "",
+    age: 0,
+    gender: "",
+    email: "",
+    phone: "",
+    address: "",
+    medicalHistory: [],
+    allergies: [],
+    medications: [],
+    lastVisit: "",
+    upcomingAppointment: undefined,
   },
 }) => {
   return (

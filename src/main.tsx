@@ -4,6 +4,10 @@ import App from "./App.tsx";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { TempoDevtools } from "tempo-devtools";
+
+// Initialize Tempo Devtools
+TempoDevtools.init();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

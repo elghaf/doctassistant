@@ -67,20 +67,15 @@ interface PatientSummaryCardsProps {
 }
 
 const PatientSummaryCards = ({
-  nextAppointment = {
-    date: "May 15, 2023",
-    time: "10:30 AM",
-    doctor: "Dr. Sarah Johnson",
-    type: "Annual Check-up",
-  },
-  pendingQuestionnaires = 2,
+  nextAppointment = undefined,
+  pendingQuestionnaires = 0,
   recentLabResults = {
-    count: 3,
-    new: 1,
+    count: 0,
+    new: 0,
   },
   notifications = {
-    count: 5,
-    urgent: 2,
+    count: 0,
+    urgent: 0,
   },
 }: PatientSummaryCardsProps) => {
   return (

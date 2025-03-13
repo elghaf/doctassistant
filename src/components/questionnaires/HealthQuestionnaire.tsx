@@ -87,44 +87,43 @@ const HealthQuestionnaire: React.FC<HealthQuestionnaireProps> = ({
 
   const defaultValues: HealthQuestionnaireData = {
     personalInfo: {
-      fullName: "John Doe",
-      dateOfBirth: "1985-05-15",
-      gender: "male",
-      email: "john.doe@example.com",
-      phone: "(555) 123-4567",
+      fullName: "",
+      dateOfBirth: "",
+      gender: "",
+      email: "",
+      phone: "",
     },
     medicalHistory: {
       hasHeartDisease: false,
       hasDiabetes: false,
-      hasAsthma: true,
+      hasAsthma: false,
       hasHypertension: false,
       hasArthritis: false,
       hasCancer: false,
-      otherConditions: "Seasonal allergies",
+      otherConditions: "",
     },
     currentSymptoms: {
       hasFever: false,
-      hasCough: true,
+      hasCough: false,
       hasBreathingDifficulty: false,
-      hasFatigue: true,
-      hasHeadache: true,
+      hasFatigue: false,
+      hasHeadache: false,
       hasPain: false,
       painLocation: "",
-      symptomDuration: "3-5 days",
-      symptomSeverity: "moderate",
+      symptomDuration: "",
+      symptomSeverity: "",
     },
     medications: {
-      currentMedications: "Albuterol inhaler as needed, Claritin 10mg daily",
-      allergies: "Penicillin, Peanuts",
+      currentMedications: "",
+      allergies: "",
     },
     lifestyle: {
-      smokingStatus: "never",
-      alcoholConsumption: "occasional",
-      exerciseFrequency: "2-3 times per week",
-      dietDescription: "Balanced diet with occasional fast food",
+      smokingStatus: "",
+      alcoholConsumption: "",
+      exerciseFrequency: "",
+      dietDescription: "",
     },
-    additionalNotes:
-      "I've been experiencing more frequent headaches in the past month, possibly related to increased screen time.",
+    additionalNotes: "",
   };
 
   const form = useForm<HealthQuestionnaireData>({
