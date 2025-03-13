@@ -1,258 +1,127 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import React from "react";
+import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "../ui/dropdown-menu";
+import { Bell, LogOut, Menu, User } from "lucide-react";
 import {
-  Bell,
-  Calendar,
-  LogOut,
-  Search,
-  Settings,
-  User,
-  X,
-} from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
-
-interface Notification {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  read: boolean;
-  type: "appointment" | "patient" | "system";
-}
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthProvider";
 
 interface HeaderProps {
-  doctorName?: string;
-  doctorAvatar?: string;
-  notifications?: Notification[];
-  onSearch?: (query: string) => void;
-  onNotificationRead?: (id: string) => void;
-  onNotificationClear?: () => void;
-  onProfileClick?: () => void;
-  onSettingsClick?: () => void;
+  userName?: string;
+  userRole?: "patient" | "doctor" | "admin";
+  userAvatar?: string;
+  notificationCount?: number;
+  onLogin?: () => void;
   onLogout?: () => void;
+  onNotificationsClick?: () => void;
 }
 
 const Header = ({
-  doctorName = "Dr. Sarah Johnson",
-  doctorAvatar = "",
-  notifications = [
-    {
-      id: "1",
-      title: "Upcoming Appointment",
-      description: "John Doe at 2:30 PM today",
-      time: "30 minutes ago",
-      read: false,
-      type: "appointment",
-    },
-    {
-      id: "2",
-      title: "New Test Results",
-      description: "Lab results for Jane Smith are ready",
-      time: "2 hours ago",
-      read: false,
-      type: "patient",
-    },
-    {
-      id: "3",
-      title: "System Update",
-      description: "New features available in the dashboard",
-      time: "1 day ago",
-      read: true,
-      type: "system",
-    },
-  ],
-  onSearch = () => {},
-  onNotificationRead = () => {},
-  onNotificationClear = () => {},
-  onProfileClick = () => {},
-  onSettingsClick = () => {},
+  userName = "Guest",
+  userRole = "patient",
+  userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=medical",
+  notificationCount = 3,
+  onLogin = () => {},
   onLogout = () => {},
+  onNotificationsClick = () => {},
 }: HeaderProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const { signOut } = useAuth();
   const navigate = useNavigate();
+  const { user, isSignedIn, signOut } = useAuth();
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
 
   const handleLogout = async () => {
-    await signOut();
-    navigate("/auth/login");
-  };
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(searchQuery);
-  };
-
-  const handleNotificationClick = (id: string) => {
-    onNotificationRead(id);
-  };
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "appointment":
-        return <Calendar className="h-4 w-4 text-blue-500" />;
-      case "patient":
-        return <User className="h-4 w-4 text-green-500" />;
-      case "system":
-        return <Settings className="h-4 w-4 text-amber-500" />;
-      default:
-        return <Bell className="h-4 w-4 text-gray-500" />;
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Error during logout:", error);
     }
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 h-20 px-6 flex items-center justify-between w-full">
-      {/* Left side - Search */}
-      <div className="w-1/3">
-        <form onSubmit={handleSearch} className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="text"
-            placeholder="Search patients, appointments..."
-            className="pl-10 w-full max-w-md"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </form>
+    <header className="w-full h-20 bg-white border-b border-gray-200 shadow-sm flex items-center justify-between px-4 md:px-8 lg:px-12">
+      <div className="flex items-center">
+        {/* Logo and Title */}
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+            <span className="text-white text-xl font-bold">M</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Medical Office</h1>
+            <p className="text-sm text-gray-500">Management System</p>
+          </div>
+        </Link>
       </div>
 
-      {/* Right side - Notifications and Profile */}
-      <div className="flex items-center space-x-4">
-        {/* Notifications */}
-        <DropdownMenu
-          open={notificationsOpen}
-          onOpenChange={setNotificationsOpen}
-        >
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <div className="flex justify-between items-center p-2">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-              {notifications.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    onNotificationClear();
-                    setNotificationsOpen(false);
-                  }}
-                  className="h-auto p-1 text-xs"
-                >
-                  Clear all
-                </Button>
-              )}
-            </div>
-            <DropdownMenuSeparator />
-            {notifications.length > 0 ? (
-              <div className="max-h-[300px] overflow-y-auto">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-3 hover:bg-gray-50 cursor-pointer ${!notification.read ? "bg-blue-50" : ""}`}
-                    onClick={() => handleNotificationClick(notification.id)}
-                  >
-                    <div className="flex items-start">
-                      <div className="mr-3 mt-0.5">
-                        {getNotificationIcon(notification.type)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <p className="font-medium text-sm">
-                            {notification.title}
-                          </p>
-                          {!notification.read && (
-                            <Badge
-                              variant="secondary"
-                              className="ml-2 h-1.5 w-1.5 rounded-full p-0"
-                            />
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {notification.description}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {notification.time}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-6 px-4 text-center">
-                <p className="text-gray-500 text-sm">No notifications</p>
-              </div>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Profile */}
+      {/* Mobile Menu */}
+      <div className="md:hidden ml-auto">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="flex items-center space-x-2 h-auto p-1"
-            >
-              <Avatar>
-                <AvatarImage
-                  src={
-                    doctorAvatar ||
-                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${doctorName}`
-                  }
-                  alt={doctorName}
-                />
-                <AvatarFallback>
-                  {doctorName
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-left">
-                <p className="text-sm font-medium">{doctorName}</p>
-                <p className="text-xs text-gray-500">Medical Doctor</p>
-              </div>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={onProfileClick}>
-              <User className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onSettingsClick}>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Logout</span>
-            </DropdownMenuItem>
+            {isSignedIn && user ? (
+              <>
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-medium">{user.name}</p>
+                  <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <DropdownMenuItem onClick={handleLogin}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Login</span>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+
+      {/* Desktop Authentication */}
+      <div className="hidden md:flex items-center gap-4">
+        {isSignedIn && user ? (
+          <div className="flex items-center gap-3">
+            <div className="text-right mr-2">
+              <p className="text-sm font-medium">{user.name}</p>
+              <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+            </div>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+        ) : (
+          <Button onClick={handleLogin}>
+            <User className="mr-2 h-4 w-4" />
+            Login
+          </Button>
+        )}
       </div>
     </header>
   );

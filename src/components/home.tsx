@@ -1,191 +1,95 @@
-import React, { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "./auth/AuthProvider";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { SupabaseSetup } from "@/components/ui/env-setup";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Users,
-  Activity,
-  Calendar,
-  FileText,
-  PlusCircle,
-  Search,
-  Bell,
-  ChevronRight,
-} from "lucide-react";
 
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import DashboardContent from "@/components/dashboard/DashboardContent";
-import AddPatientModal from "@/components/patients/AddPatientModal";
-import AISummaryModal from "@/components/ai/AISummaryModal";
-import ReportBuilderModal from "@/components/reports/ReportBuilderModal";
-import AppointmentModal from "@/components/appointments/AppointmentModal";
-import DataManagementModal from "@/components/data/DataManagementModal";
-
-const Home = () => {
-  const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
-  const [isAISummaryOpen, setIsAISummaryOpen] = useState(false);
-  const [isReportBuilderOpen, setIsReportBuilderOpen] = useState(false);
-  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
-  const [isDataManagementOpen, setIsDataManagementOpen] = useState(false);
-  const [isSupabaseConfigured, setIsSupabaseConfigured] = useState(false);
-  const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
-
-  useEffect(() => {
-    // Check if Supabase is configured
-    const checkSupabaseConfig = async () => {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-      if (supabaseUrl && supabaseKey) {
-        try {
-          const { supabase } = await import("@/lib/supabase");
-          const { error } = await supabase
-            .from("patients")
-            .select("count", { count: "exact", head: true });
-
-          if (!error) {
-            setIsSupabaseConfigured(true);
-          } else {
-            setIsSupabaseModalOpen(true);
-          }
-        } catch (err) {
-          console.error("Error connecting to Supabase:", err);
-          setIsSupabaseModalOpen(true);
-        }
-      } else {
-        setIsSupabaseModalOpen(true);
-      }
-    };
-
-    checkSupabaseConfig();
-  }, []);
-
-  // Handlers for opening modals
-  const handleAddPatient = () => setIsAddPatientOpen(true);
-  const handleGenerateReport = () => setIsReportBuilderOpen(true);
-  const handleScheduleAppointment = () => setIsAppointmentModalOpen(true);
-  const handleManageData = () => setIsDataManagementOpen(true);
-  const handleAISummary = () => setIsAISummaryOpen(true);
-
-  // Handlers for navigation
-  const handleViewAllPatients = () => {
-    // In a real app, this would navigate to the patients page
-    console.log("Navigate to patients page");
-  };
-
-  const handleViewAllAppointments = () => {
-    // In a real app, this would navigate to the appointments page
-    console.log("Navigate to appointments page");
-  };
-
-  const handleViewPatient = (id: string) => {
-    // In a real app, this would navigate to the patient detail page
-    console.log(`Navigate to patient ${id} details`);
-  };
-
-  const handleViewAppointment = (id: string) => {
-    // In a real app, this would navigate to the appointment detail or open a modal
-    console.log(`View appointment ${id} details`);
-  };
+function Home() {
+  const { isSignedIn } = useAuth();
+  const navigate = useNavigate();
 
   return (
-    <DashboardLayout>
-      <DashboardContent
-        onAddPatient={handleAddPatient}
-        onGenerateReport={handleGenerateReport}
-        onScheduleAppointment={handleScheduleAppointment}
-        onManageData={handleManageData}
-        onAISummary={handleAISummary}
-        onViewAllPatients={handleViewAllPatients}
-        onViewAllAppointments={handleViewAllAppointments}
-        onViewPatient={handleViewPatient}
-        onViewAppointment={handleViewAppointment}
-      />
-
-      {/* Modals */}
-      <AddPatientModal
-        open={isAddPatientOpen}
-        onOpenChange={setIsAddPatientOpen}
-        onPatientAdded={(data) => {
-          console.log("Patient added:", data);
-          setIsAddPatientOpen(false);
-        }}
-      />
-
-      <AISummaryModal
-        isOpen={isAISummaryOpen}
-        onOpenChange={setIsAISummaryOpen}
-        onSaveSummary={(summary) => {
-          console.log("Summary saved:", summary);
-          setIsAISummaryOpen(false);
-        }}
-      />
-
-      <ReportBuilderModal
-        open={isReportBuilderOpen}
-        onOpenChange={setIsReportBuilderOpen}
-        onSave={(reportData) => {
-          console.log("Report saved:", reportData);
-          setIsReportBuilderOpen(false);
-        }}
-      />
-
-      <AppointmentModal
-        open={isAppointmentModalOpen}
-        onOpenChange={setIsAppointmentModalOpen}
-        onSave={(data) => {
-          console.log("Appointment saved:", data);
-          setIsAppointmentModalOpen(false);
-        }}
-      />
-
-      <DataManagementModal
-        open={isDataManagementOpen}
-        onOpenChange={setIsDataManagementOpen}
-        onExport={(format, options) => {
-          console.log(
-            `Exporting data in ${format} format with options:`,
-            options,
-          );
-        }}
-        onImport={(file) => {
-          console.log("Importing data from file:", file.name);
-        }}
-      />
-
-      {/* Supabase Configuration Modal */}
-      <Dialog open={isSupabaseModalOpen} onOpenChange={setIsSupabaseModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Database Configuration</DialogTitle>
-            <DialogDescription>
-              Configure your Supabase database connection to enable data
-              persistence.
-            </DialogDescription>
-          </DialogHeader>
-          <SupabaseSetup />
-        </DialogContent>
-      </Dialog>
-    </DashboardLayout>
+    <div className="w-screen h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <Card className="w-full max-w-4xl bg-white shadow-xl">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold">
+            Medical Office Management System
+          </CardTitle>
+          <CardDescription className="text-xl mt-2">
+            A comprehensive platform for patients and healthcare providers
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <h3 className="text-xl font-semibold text-blue-800 mb-3">
+                For Patients
+              </h3>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-center">
+                  ✓ Schedule appointments online
+                </li>
+                <li className="flex items-center">
+                  ✓ Complete health questionnaires
+                </li>
+                <li className="flex items-center">
+                  ✓ View medical reports and lab results
+                </li>
+                <li className="flex items-center">
+                  ✓ Secure messaging with your doctor
+                </li>
+              </ul>
+            </div>
+            <div className="bg-green-50 p-6 rounded-lg">
+              <h3 className="text-xl font-semibold text-green-800 mb-3">
+                For Doctors
+              </h3>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-center">
+                  ✓ Manage patient appointments
+                </li>
+                <li className="flex items-center">
+                  ✓ Review patient questionnaires
+                </li>
+                <li className="flex items-center">
+                  ✓ Generate AI-powered medical reports
+                </li>
+                <li className="flex items-center">
+                  ✓ Streamlined patient communication
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-center gap-4 pt-6">
+          {isSignedIn ? (
+            <Button size="lg" onClick={() => navigate("/dashboard")}>
+              Go to Dashboard
+            </Button>
+          ) : (
+            <>
+              <Button size="lg" onClick={() => navigate("/login")}>
+                Sign In
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => navigate("/register")}
+              >
+                Create Account
+              </Button>
+            </>
+          )}
+        </CardFooter>
+      </Card>
+    </div>
   );
-};
+}
 
 export default Home;
