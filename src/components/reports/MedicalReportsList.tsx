@@ -30,38 +30,8 @@ interface MedicalReportsListProps {
 }
 
 const MedicalReportsList = ({
-  reports = [
-    {
-      id: "1",
-      title: "Annual Physical Examination",
-      date: new Date(2023, 5, 15),
-      doctor: "Dr. Sarah Johnson",
-      category: "Physical",
-      status: "available",
-      summary:
-        "Overall health is good. Blood pressure is within normal range. Recommended regular exercise and balanced diet.",
-    },
-    {
-      id: "2",
-      title: "Blood Test Results",
-      date: new Date(2023, 6, 22),
-      doctor: "Dr. Michael Chen",
-      category: "Laboratory",
-      status: "available",
-      summary:
-        "Cholesterol levels slightly elevated. Vitamin D deficiency detected. Recommended supplements and follow-up in 3 months.",
-    },
-    {
-      id: "3",
-      title: "Cardiology Consultation",
-      date: new Date(2023, 7, 10),
-      doctor: "Dr. Emily Rodriguez",
-      category: "Specialist",
-      status: "pending",
-      summary:
-        "AI analysis in progress. Report will be available after doctor review.",
-    },
-  ],
+  reports = [],
+
   onViewReport = (id) => console.log(`View report ${id}`),
   onDownloadReport = (id) => console.log(`Download report ${id}`),
 }: MedicalReportsListProps) => {

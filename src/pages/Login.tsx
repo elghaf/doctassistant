@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
@@ -15,18 +15,29 @@ import { RegisterForm } from "@/components/auth/RegisterForm";
 import { Link } from "react-router-dom";
 
 const Login = () => {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, isSignedIn, user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isSignedIn && user) {
+      if (user.role === "patient") {
+        navigate("/patient-dashboard");
+      } else if (user.role === "doctor") {
+        navigate("/doctor-dashboard");
+      }
+    }
+  }, [isSignedIn, user, navigate]);
 
   const handleLogin = async (values: any) => {
     try {
       setIsLoading(true);
       setError(null);
       await signIn(values.email, values.password, values.role);
-      navigate("/dashboard");
+      // Navigation will happen in the useEffect above
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to sign in");
     } finally {
@@ -39,7 +50,7 @@ const Login = () => {
       setIsLoading(true);
       setError(null);
       await signUp(values.email, values.password, values.name, values.role);
-      navigate("/dashboard");
+      // Navigation will happen in the useEffect above
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create account");
     } finally {
@@ -56,13 +67,17 @@ const Login = () => {
               Medical Office Portal
             </CardTitle>
             <CardDescription>
-              {activeTab === "login" ? "Sign in to access your portal" : "Create a new account"}
+              {activeTab === "login"
+                ? "Sign in to access your portal"
+                : "Create a new account"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs 
-              value={activeTab} 
-              onValueChange={(value) => setActiveTab(value as "login" | "register")}
+            <Tabs
+              value={activeTab}
+              onValueChange={(value) =>
+                setActiveTab(value as "login" | "register")
+              }
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-2">
@@ -70,14 +85,14 @@ const Login = () => {
                 <TabsTrigger value="register">Register</TabsTrigger>
               </TabsList>
               <TabsContent value="login" className="mt-4">
-                <LoginForm 
+                <LoginForm
                   onSubmit={handleLogin}
                   isLoading={isLoading}
                   error={error}
                 />
               </TabsContent>
               <TabsContent value="register" className="mt-4">
-                <RegisterForm 
+                <RegisterForm
                   onSubmit={handleRegister}
                   isLoading={isLoading}
                   error={error}

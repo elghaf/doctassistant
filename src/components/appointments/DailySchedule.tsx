@@ -32,44 +32,8 @@ interface DailyScheduleProps {
 
 const DailySchedule = ({
   date = new Date(),
-  appointments = [
-    {
-      id: "1",
-      patientName: "Sarah Johnson",
-      patientAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
-      time: "09:00",
-      duration: 30,
-      reason: "Annual checkup",
-      status: "scheduled",
-    },
-    {
-      id: "2",
-      patientName: "Michael Chen",
-      patientAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
-      time: "10:00",
-      duration: 45,
-      reason: "Follow-up consultation",
-      status: "in-progress",
-    },
-    {
-      id: "3",
-      patientName: "Emily Rodriguez",
-      patientAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emily",
-      time: "11:30",
-      duration: 60,
-      reason: "New patient consultation",
-      status: "scheduled",
-    },
-    {
-      id: "4",
-      patientName: "David Wilson",
-      patientAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=david",
-      time: "14:00",
-      duration: 30,
-      reason: "Prescription renewal",
-      status: "completed",
-    },
-  ],
+  appointments = [],
+
   onMarkComplete = () => {},
   onCancel = () => {},
 }: DailyScheduleProps) => {

@@ -1,21 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, FileText, Plus } from "lucide-react";
+import { Calendar, FileText, Plus, Bell } from "lucide-react";
 
 import DashboardSidebar from "./DashboardSidebar";
 import AppointmentRequests from "../appointments/AppointmentRequests";
 import PatientList from "../patients/PatientList";
 import PatientDetails from "../patients/PatientDetails";
 import DailySchedule from "../appointments/DailySchedule";
+import NotificationCenter from "../notifications/NotificationCenter";
+import { supabase } from "@/lib/supabase";
 
 interface DoctorDashboardProps {
+  doctorId?: string;
   doctorName?: string;
   doctorAvatar?: string;
 }
 
 const DoctorDashboard = ({
+  doctorId = "00000000-0000-0000-0000-000000000000", // This would come from auth in a real app
   doctorName = "Dr. Sarah Johnson",
   doctorAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=doctor",
 }: DoctorDashboardProps) => {
@@ -23,6 +27,7 @@ const DoctorDashboard = ({
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
     null,
   );
+  const [notificationCount, setNotificationCount] = useState(0);
 
   // Handle patient selection
   const handlePatientSelect = (patientId: string) => {
@@ -36,6 +41,47 @@ const DoctorDashboard = ({
     setActiveTab("patients");
   };
 
+  // Fetch unread notification count
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      try {
+        const { count, error } = await supabase
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", doctorId)
+          .eq("status", "unread");
+
+        if (error) throw error;
+        setNotificationCount(count || 0);
+      } catch (error) {
+        console.error("Error fetching notification count:", error);
+      }
+    };
+
+    fetchNotificationCount();
+
+    // Subscribe to notifications to update count in real-time
+    const subscription = supabase
+      .channel(`public:notifications:user_id:${doctorId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${doctorId}`,
+        },
+        () => {
+          fetchNotificationCount();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [doctorId]);
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -48,9 +94,14 @@ const DoctorDashboard = ({
 
       {/* Main content */}
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Doctor Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {doctorName}</p>
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Doctor Dashboard
+            </h1>
+            <p className="text-gray-600">Welcome back, {doctorName}</p>
+          </div>
+          <NotificationCenter userId={doctorId} userRole="doctor" />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

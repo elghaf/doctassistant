@@ -288,29 +288,20 @@ const defaultAppointments: Appointment[] = [
   {
     id: "1",
     doctorName: "Sarah Johnson",
-    doctorSpecialty: "Cardiologist",
-    date: new Date(new Date().setDate(new Date().getDate() + 3)),
+    doctorSpecialty: "General Practitioner",
+    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
     time: "10:00 AM",
-    location: "Main Hospital, Room 302",
+    location: "Main Clinic, Room 101",
     status: "confirmed",
   },
   {
     id: "2",
     doctorName: "Michael Chen",
-    doctorSpecialty: "Dermatologist",
-    date: new Date(new Date().setDate(new Date().getDate() + 7)),
+    doctorSpecialty: "Cardiologist",
+    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
     time: "2:30 PM",
-    location: "Medical Center, Suite 105",
+    location: "Specialty Center, Floor 3",
     status: "pending",
-  },
-  {
-    id: "3",
-    doctorName: "Emily Rodriguez",
-    doctorSpecialty: "Neurologist",
-    date: new Date(new Date().setDate(new Date().getDate() + 14)),
-    time: "9:15 AM",
-    location: "Neurology Clinic, Floor 4",
-    status: "confirmed",
   },
 ];
 

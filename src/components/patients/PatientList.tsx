@@ -24,58 +24,8 @@ interface PatientListProps {
 }
 
 const PatientList = ({
-  patients = [
-    {
-      id: "1",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      phone: "(555) 123-4567",
-      dateOfBirth: "1985-06-15",
-      lastVisit: "2023-10-12",
-      status: "active",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=jane",
-    },
-    {
-      id: "2",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      phone: "(555) 987-6543",
-      dateOfBirth: "1978-03-22",
-      lastVisit: "2023-11-05",
-      status: "active",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-    },
-    {
-      id: "3",
-      name: "Emily Johnson",
-      email: "emily.j@example.com",
-      phone: "(555) 234-5678",
-      dateOfBirth: "1992-09-08",
-      lastVisit: "2023-09-30",
-      status: "pending",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emily",
-    },
-    {
-      id: "4",
-      name: "Michael Brown",
-      email: "michael.b@example.com",
-      phone: "(555) 876-5432",
-      dateOfBirth: "1965-11-17",
-      lastVisit: "2023-10-25",
-      status: "inactive",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
-    },
-    {
-      id: "5",
-      name: "Sarah Wilson",
-      email: "sarah.w@example.com",
-      phone: "(555) 345-6789",
-      dateOfBirth: "1989-04-30",
-      lastVisit: "2023-11-10",
-      status: "active",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
-    },
-  ],
+  patients = [],
+
   onPatientSelect = (id) => console.log(`Selected patient: ${id}`),
   onAddPatient = () => console.log("Add new patient clicked"),
 }: PatientListProps) => {

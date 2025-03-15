@@ -40,38 +40,8 @@ interface AppointmentRequestsProps {
 }
 
 const AppointmentRequests = ({
-  requests = [
-    {
-      id: "1",
-      patientName: "Sarah Johnson",
-      patientId: "P-1001",
-      patientAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
-      requestDate: new Date(2023, 5, 15),
-      appointmentDate: new Date(2023, 5, 20, 10, 30),
-      reason: "Annual physical examination",
-      status: "pending",
-    },
-    {
-      id: "2",
-      patientName: "Michael Chen",
-      patientId: "P-1002",
-      patientAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
-      requestDate: new Date(2023, 5, 16),
-      appointmentDate: new Date(2023, 5, 21, 14, 0),
-      reason: "Follow-up on medication",
-      status: "pending",
-    },
-    {
-      id: "3",
-      patientName: "Emily Rodriguez",
-      patientId: "P-1003",
-      patientAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emily",
-      requestDate: new Date(2023, 5, 17),
-      appointmentDate: new Date(2023, 5, 22, 9, 15),
-      reason: "Chronic pain consultation",
-      status: "pending",
-    },
-  ],
+  requests = [],
+
   onApprove = (id) => console.log(`Approved appointment ${id}`),
   onDecline = (id) => console.log(`Declined appointment ${id}`),
 }: AppointmentRequestsProps) => {
