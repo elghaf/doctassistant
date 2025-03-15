@@ -9,6 +9,104 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appointment_slots: {
+        Row: {
+          created_at: string | null
+          doctor_id: string
+          end_time: string
+          id: string
+          is_available: boolean | null
+          start_time: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          doctor_id: string
+          end_time: string
+          id?: string
+          is_available?: boolean | null
+          start_time: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          doctor_id?: string
+          end_time?: string
+          id?: string
+          is_available?: boolean | null
+          start_time?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_slots_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointments: {
+        Row: {
+          appointment_date: string
+          appointment_type: string | null
+          created_at: string | null
+          doctor_id: string
+          duration: number
+          id: string
+          notes: string | null
+          patient_id: string
+          reason: string | null
+          status: string
+          time_slot: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          appointment_date: string
+          appointment_type?: string | null
+          created_at?: string | null
+          doctor_id: string
+          duration?: number
+          id?: string
+          notes?: string | null
+          patient_id: string
+          reason?: string | null
+          status?: string
+          time_slot?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          appointment_date?: string
+          appointment_type?: string | null
+          created_at?: string | null
+          doctor_id?: string
+          duration?: number
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          reason?: string | null
+          status?: string
+          time_slot?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctors: {
         Row: {
           created_at: string | null
@@ -38,6 +136,63 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      medical_reports: {
+        Row: {
+          ai_summary: string | null
+          created_at: string | null
+          doctor_id: string
+          id: string
+          patient_id: string
+          report_date: string | null
+          status: string
+          summary: string | null
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_summary?: string | null
+          created_at?: string | null
+          doctor_id: string
+          id?: string
+          patient_id: string
+          report_date?: string | null
+          status?: string
+          summary?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_summary?: string | null
+          created_at?: string | null
+          doctor_id?: string
+          id?: string
+          patient_id?: string
+          report_date?: string | null
+          status?: string
+          summary?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_reports_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_reports_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -71,6 +226,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      patient_questionnaires: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          due_date: string | null
+          id: string
+          patient_id: string
+          questionnaire_id: string
+          responses: Json | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          patient_id: string
+          questionnaire_id: string
+          responses?: Json | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          patient_id?: string
+          questionnaire_id?: string
+          responses?: Json | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_questionnaires_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_questionnaires_questionnaire_id_fkey"
+            columns: ["questionnaire_id"]
+            isOneToOne: false
+            referencedRelation: "questionnaires"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patients: {
         Row: {
@@ -125,6 +331,33 @@ export type Database = {
           id?: string
           name?: string | null
           role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      questionnaires: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          title?: string
+          type?: string
           updated_at?: string | null
         }
         Relationships: []

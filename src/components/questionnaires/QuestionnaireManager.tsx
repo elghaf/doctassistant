@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
   Card,
@@ -15,8 +15,11 @@ import {
   ClipboardList,
   FileText,
   Plus,
+  Loader2,
 } from "lucide-react";
 import HealthQuestionnaire from "./HealthQuestionnaire";
+import { questionnairesApi } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Questionnaire {
   id: string;
@@ -29,19 +32,78 @@ interface Questionnaire {
 
 interface QuestionnaireManagerProps {
   patientId?: string;
+  questionnaires?: any[];
   onSubmitQuestionnaire?: (questionnaireId: string, data: any) => void;
 }
 
 const QuestionnaireManager: React.FC<QuestionnaireManagerProps> = ({
   patientId = "12345",
+  questionnaires: initialQuestionnaires = [],
   onSubmitQuestionnaire = () => {},
 }) => {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [selectedQuestionnaire, setSelectedQuestionnaire] =
     useState<Questionnaire | null>(null);
+  const [loading, setLoading] = useState(initialQuestionnaires.length === 0);
+  const [error, setError] = useState<Error | null>(null);
+  const { toast } = useToast();
 
   // Questionnaires data
-  const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
+  const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>(
+    initialQuestionnaires.map((q) => ({
+      id: q.id,
+      title: q.questionnaires?.title || "Health Questionnaire",
+      description:
+        q.questionnaires?.description ||
+        "Please complete this health questionnaire",
+      status: q.status || "pending",
+      dueDate: q.due_date || new Date().toISOString(),
+      type: q.questionnaires?.type || "health",
+    })),
+  );
+
+  // Fetch questionnaires if none provided
+  useEffect(() => {
+    if (initialQuestionnaires.length === 0 && patientId) {
+      const fetchQuestionnaires = async () => {
+        try {
+          setLoading(true);
+          const data =
+            await questionnairesApi.getPatientQuestionnaires(patientId);
+
+          const formattedQuestionnaires = data.map((q) => ({
+            id: q.id,
+            title: q.questionnaires?.title || "Health Questionnaire",
+            description:
+              q.questionnaires?.description ||
+              "Please complete this health questionnaire",
+            status: q.status || "pending",
+            dueDate: q.due_date || new Date().toISOString(),
+            type: q.questionnaires?.type || "health",
+          }));
+
+          setQuestionnaires(formattedQuestionnaires);
+          setError(null);
+        } catch (err) {
+          console.error("Error fetching questionnaires:", err);
+          setError(
+            err instanceof Error
+              ? err
+              : new Error("Failed to load questionnaires"),
+          );
+          toast({
+            title: "Error",
+            description: "Failed to load questionnaires. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchQuestionnaires();
+    }
+  }, [patientId, initialQuestionnaires.length, toast]);
 
   const filteredQuestionnaires =
     activeTab === "all"
@@ -64,6 +126,11 @@ const QuestionnaireManager: React.FC<QuestionnaireManagerProps> = ({
 
       // Reset the selected questionnaire
       setSelectedQuestionnaire(null);
+
+      toast({
+        title: "Questionnaire Submitted",
+        description: "Your questionnaire has been successfully submitted.",
+      });
     }
   };
 
@@ -115,6 +182,36 @@ const QuestionnaireManager: React.FC<QuestionnaireManagerProps> = ({
           patientId={patientId}
           onSubmit={handleSubmitQuestionnaire}
         />
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="w-full bg-background p-6 flex justify-center items-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
+          <p className="text-muted-foreground">Loading questionnaires...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full bg-background p-6">
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+            <p className="text-red-500 font-medium">
+              Error loading questionnaires
+            </p>
+            <p className="text-muted-foreground mt-2">{error.message}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

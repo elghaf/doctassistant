@@ -13,6 +13,10 @@ import {
   MessageSquareIcon,
   SettingsIcon,
   UserIcon,
+  Stethoscope,
+  Activity,
+  BarChart,
+  HelpCircle,
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -79,6 +83,11 @@ const DashboardSidebar = ({
         icon: <ClipboardListIcon size={20} />,
       },
       {
+        path: "/diagnostics",
+        label: "Medical Diagnostics",
+        icon: <Stethoscope size={20} />,
+      },
+      {
         path: "/reports",
         label: "Medical Reports",
         icon: <FileTextIcon size={20} />,
@@ -87,6 +96,11 @@ const DashboardSidebar = ({
         path: "/messages",
         label: "Messages",
         icon: <MessageSquareIcon size={20} />,
+      },
+      {
+        path: "/analytics",
+        label: "Analytics",
+        icon: <BarChart size={20} />,
       },
     ];
 

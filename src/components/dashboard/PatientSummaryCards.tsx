@@ -67,7 +67,12 @@ interface PatientSummaryCardsProps {
 }
 
 const PatientSummaryCards = ({
-  nextAppointment = undefined,
+  nextAppointment = {
+    date: "No upcoming",
+    time: "--",
+    doctor: "--",
+    type: "--",
+  },
   pendingQuestionnaires = 0,
   recentLabResults = {
     count: 0,

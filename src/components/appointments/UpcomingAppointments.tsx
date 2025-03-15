@@ -284,6 +284,25 @@ const UpcomingAppointments = ({
 };
 
 // Default appointments for demonstration
-const defaultAppointments: Appointment[] = [];
+const defaultAppointments: Appointment[] = [
+  {
+    id: "1",
+    doctorName: "Sarah Johnson",
+    doctorSpecialty: "General Practitioner",
+    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+    time: "10:00 AM",
+    location: "Main Clinic, Room 101",
+    status: "confirmed",
+  },
+  {
+    id: "2",
+    doctorName: "Michael Chen",
+    doctorSpecialty: "Cardiologist",
+    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+    time: "2:30 PM",
+    location: "Specialty Center, Floor 3",
+    status: "pending",
+  },
+];
 
 export default UpcomingAppointments;
