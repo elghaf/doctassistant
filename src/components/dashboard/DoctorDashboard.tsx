@@ -96,13 +96,12 @@ const DoctorDashboard = ({
       <div className="flex-1 overflow-y-auto p-6">
         <div className="mb-6 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Doctor Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Doctor Dashboard
+            </h1>
             <p className="text-gray-600">Welcome back, {doctorName}</p>
           </div>
-          <NotificationCenter 
-            userId={doctorId}
-            userRole="doctor"
-          />
+          <NotificationCenter userId={doctorId} userRole="doctor" />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

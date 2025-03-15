@@ -1,6 +1,10 @@
 import { supabase } from "./supabase";
 import { Database } from "../types/supabase";
-import { createAppointmentNotifications, createQuestionnaireNotification, createReportNotification } from "./notifications";
+import {
+  createAppointmentNotifications,
+  createQuestionnaireNotification,
+  createReportNotification,
+} from "./notifications";
 
 // Appointments API
 export const appointmentsApi = {
@@ -65,20 +69,23 @@ export const appointmentsApi = {
       .select();
 
     if (error) throw error;
-    
+
     // Create notifications for both patient and doctor
     try {
       await createAppointmentNotifications(
         appointmentData.patient_id,
         appointmentData.doctor_id,
         data[0],
-        "created"
+        "created",
       );
     } catch (notificationError) {
-      console.error("Error creating appointment notifications:", notificationError);
+      console.error(
+        "Error creating appointment notifications:",
+        notificationError,
+      );
       // Don't throw here, we still want to return the appointment data
     }
-    
+
     return data[0];
   },
 
@@ -89,9 +96,9 @@ export const appointmentsApi = {
       .select("*")
       .eq("id", appointmentId)
       .single();
-      
+
     if (fetchError) throw fetchError;
-    
+
     // Update the appointment status
     const { data, error } = await supabase
       .from("appointments")
@@ -100,20 +107,23 @@ export const appointmentsApi = {
       .select();
 
     if (error) throw error;
-    
+
     // Create notifications for both patient and doctor
     try {
       await createAppointmentNotifications(
         appointmentData.patient_id,
         appointmentData.doctor_id,
         data[0],
-        "cancelled"
+        "cancelled",
       );
     } catch (notificationError) {
-      console.error("Error creating appointment cancellation notifications:", notificationError);
+      console.error(
+        "Error creating appointment cancellation notifications:",
+        notificationError,
+      );
       // Don't throw here, we still want to return the appointment data
     }
-    
+
     return data[0];
   },
 
@@ -128,9 +138,9 @@ export const appointmentsApi = {
       .select("*")
       .eq("id", appointmentId)
       .single();
-      
+
     if (fetchError) throw fetchError;
-    
+
     // Update the appointment
     const { data, error } = await supabase
       .from("appointments")
@@ -143,20 +153,23 @@ export const appointmentsApi = {
       .select();
 
     if (error) throw error;
-    
+
     // Create notifications for both patient and doctor
     try {
       await createAppointmentNotifications(
         appointmentData.patient_id,
         appointmentData.doctor_id,
         data[0],
-        "updated"
+        "updated",
       );
     } catch (notificationError) {
-      console.error("Error creating appointment update notifications:", notificationError);
+      console.error(
+        "Error creating appointment update notifications:",
+        notificationError,
+      );
       // Don't throw here, we still want to return the appointment data
     }
-    
+
     return data[0];
   },
 };
@@ -205,12 +218,13 @@ export const questionnairesApi = {
         id,
         patient_id,
         questionnaires(id, title)
-      `)
+      `,
+      )
       .eq("id", patientQuestionnaireId)
       .single();
-      
+
     if (fetchError) throw fetchError;
-    
+
     // Update the questionnaire
     const { data, error } = await supabase
       .from("patient_questionnaires")
@@ -223,22 +237,25 @@ export const questionnairesApi = {
       .select();
 
     if (error) throw error;
-    
+
     // Create notification for patient
     try {
       await createQuestionnaireNotification(
         questionnaireData.patient_id,
         {
           id: questionnaireData.questionnaires.id,
-          title: questionnaireData.questionnaires.title
+          title: questionnaireData.questionnaires.title,
         },
-        "completed"
+        "completed",
       );
     } catch (notificationError) {
-      console.error("Error creating questionnaire completion notification:", notificationError);
+      console.error(
+        "Error creating questionnaire completion notification:",
+        notificationError,
+      );
       // Don't throw here, we still want to return the data
     }
-    
+
     return data[0];
   },
 };

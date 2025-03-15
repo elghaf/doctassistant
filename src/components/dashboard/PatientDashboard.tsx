@@ -197,10 +197,7 @@ const PatientDashboard = ({
             </h1>
             <p className="text-gray-600">Welcome back, {displayName}</p>
           </div>
-          <NotificationCenter 
-            userId={patientId}
-            userRole="patient"
-          />
+          <NotificationCenter userId={patientId} userRole="patient" />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

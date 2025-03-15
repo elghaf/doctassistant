@@ -1,7 +1,12 @@
 import { supabase } from "./supabase";
 import { v4 as uuidv4 } from "uuid";
 
-export type NotificationType = "appointment" | "questionnaire" | "report" | "message" | "system";
+export type NotificationType =
+  | "appointment"
+  | "questionnaire"
+  | "report"
+  | "message"
+  | "system";
 
 export interface CreateNotificationParams {
   userId: string;
@@ -50,17 +55,17 @@ export const createAppointmentNotifications = async (
   patientId: string,
   doctorId: string,
   appointmentData: any,
-  action: "created" | "updated" | "cancelled"
+  action: "created" | "updated" | "cancelled",
 ) => {
   const appointmentDate = new Date(appointmentData.appointment_date);
   const formattedDate = appointmentDate.toLocaleDateString();
   const timeSlot = appointmentData.time_slot || "";
-  
+
   let patientTitle = "";
   let patientMessage = "";
   let doctorTitle = "";
   let doctorMessage = "";
-  
+
   switch (action) {
     case "created":
       patientTitle = "Appointment Scheduled";
@@ -81,9 +86,9 @@ export const createAppointmentNotifications = async (
       doctorMessage = `An appointment for ${formattedDate} at ${timeSlot} has been cancelled.`;
       break;
   }
-  
+
   const actionUrl = `/appointments/${appointmentData.id}`;
-  
+
   try {
     // Create notification for patient
     await createNotification({
@@ -94,7 +99,7 @@ export const createAppointmentNotifications = async (
       actionUrl,
       metadata: { appointmentId: appointmentData.id },
     });
-    
+
     // Create notification for doctor
     await createNotification({
       userId: doctorId,
@@ -114,11 +119,11 @@ export const createAppointmentNotifications = async (
 export const createQuestionnaireNotification = async (
   userId: string,
   questionnaireData: any,
-  action: "assigned" | "completed" | "reminder"
+  action: "assigned" | "completed" | "reminder",
 ) => {
   let title = "";
   let message = "";
-  
+
   switch (action) {
     case "assigned":
       title = "New Health Questionnaire";
@@ -133,9 +138,9 @@ export const createQuestionnaireNotification = async (
       message = `Reminder: Please complete your ${questionnaireData.title} questionnaire.`;
       break;
   }
-  
+
   const actionUrl = `/questionnaires/${questionnaireData.id}`;
-  
+
   try {
     await createNotification({
       userId,
@@ -154,7 +159,7 @@ export const createQuestionnaireNotification = async (
 // Create medical report notification
 export const createReportNotification = async (
   patientId: string,
-  reportData: any
+  reportData: any,
 ) => {
   try {
     await createNotification({
@@ -176,13 +181,13 @@ export const createMessageNotification = async (
   recipientId: string,
   senderId: string,
   senderName: string,
-  messagePreview: string
+  messagePreview: string,
 ) => {
   try {
     await createNotification({
       userId: recipientId,
       title: "New Message",
-      message: `${senderName}: ${messagePreview.substring(0, 50)}${messagePreview.length > 50 ? '...' : ''}`,
+      message: `${senderName}: ${messagePreview.substring(0, 50)}${messagePreview.length > 50 ? "..." : ""}`,
       type: "message",
       actionUrl: `/messages/${senderId}`,
       metadata: { senderId },
