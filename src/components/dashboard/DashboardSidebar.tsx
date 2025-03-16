@@ -18,6 +18,9 @@ import {
   BarChart,
   HelpCircle,
 } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/components/ui/use-toast";
 
 interface DashboardSidebarProps {
   userType?: "patient" | "doctor" | "admin";
@@ -32,6 +35,23 @@ const DashboardSidebar = ({
   userAvatar = "",
   activePath = "/dashboard",
 }: DashboardSidebarProps) => {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error during logout:", error);
+      toast({
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Define navigation items based on user type
   const getNavItems = () => {
     const commonItems = [
@@ -131,7 +151,7 @@ const DashboardSidebar = ({
   const navItems = getNavItems();
 
   return (
-    <div className="h-full w-[250px] bg-background border-r flex flex-col">
+    <div className="h-full w-[280px] bg-background border-r flex flex-col">
       {/* User profile section */}
       <div className="p-4 flex flex-col items-center space-y-2">
         <Avatar className="h-16 w-16">
@@ -171,7 +191,11 @@ const DashboardSidebar = ({
 
       {/* Logout button */}
       <div className="p-4 mt-auto">
-        <Button variant="outline" className="w-full justify-start gap-3">
+        <Button 
+          variant="outline" 
+          className="w-full justify-start gap-3"
+          onClick={handleLogout}
+        >
           <LogOutIcon size={20} />
           Logout
         </Button>

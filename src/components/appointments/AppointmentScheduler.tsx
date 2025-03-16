@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +39,7 @@ import {
   setMinutes,
 } from "date-fns";
 import { Clock, Calendar as CalendarIcon, Info } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface AppointmentSchedulerProps {
   availableTimeSlots?: Array<{
@@ -48,12 +49,18 @@ interface AppointmentSchedulerProps {
   onAppointmentRequest?: (appointmentData: AppointmentFormData) => void;
 }
 
+interface Doctor {
+  id: string;
+  name: string;
+}
+
 interface AppointmentFormData {
-  date: Date;
-  time: string;
+  appointment_date: Date;
+  time_slot: string;
   reason: string;
   notes: string;
-  type: string;
+  appointment_type: string;
+  doctor_id: string;
 }
 
 const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
@@ -66,16 +73,45 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<AppointmentFormData>({
     defaultValues: {
-      date: new Date(),
-      time: "",
+      appointment_date: new Date(),
+      time_slot: "",
       reason: "",
       notes: "",
-      type: "regular",
+      appointment_type: "regular",
+      doctor_id: "",
     },
   });
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, name")
+          .eq("role", "doctor");
+
+        if (error) throw error;
+        setDoctors(data || []);
+      } catch (err) {
+        console.error("Error fetching doctors:", err);
+        toast({
+          title: "Error",
+          description: "Failed to load doctors. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, [toast]);
 
   // Filter available time slots for the selected date
   const availableSlotsForDate = selectedDate
@@ -95,16 +131,36 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
 
   const handleSlotSelect = (slotTime: string) => {
     setSelectedSlot(slotTime);
-    form.setValue("time", slotTime);
-    form.setValue("date", selectedDate as Date);
+    form.setValue("time_slot", slotTime);
+    form.setValue("appointment_date", selectedDate as Date);
   };
 
   const handleAppointmentSubmit = (data: AppointmentFormData) => {
-    onAppointmentRequest(data);
+    console.log("Submitting appointment with data:", data);
+    
+    if (!data.doctor_id) {
+      toast({
+        title: "Error",
+        description: "Please select a doctor for your appointment",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onAppointmentRequest({
+      appointment_date: data.appointment_date,
+      time_slot: data.time_slot,
+      reason: data.reason,
+      notes: data.notes,
+      appointment_type: data.appointment_type,
+      doctor_id: data.doctor_id,
+      duration: 30,
+      status: 'pending'
+    });
     setDialogOpen(false);
     toast({
       title: "Appointment Requested",
-      description: `Your appointment request for ${format(data.date, "MMMM do, yyyy")} at ${data.time} has been submitted.`,
+      description: `Your appointment request for ${format(data.appointment_date, "MMMM do, yyyy")} at ${data.time_slot} has been submitted.`,
     });
     form.reset();
     setSelectedSlot(null);
@@ -241,7 +297,35 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
 
                             <FormField
                               control={form.control}
-                              name="type"
+                              name="doctor_id"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Doctor</FormLabel>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select a doctor" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {doctors.map((doctor) => (
+                                        <SelectItem key={doctor.id} value={doctor.id}>
+                                          {doctor.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="appointment_type"
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Appointment Type</FormLabel>
@@ -367,3 +451,4 @@ function generateMockTimeSlots() {
 }
 
 export default AppointmentScheduler;
+

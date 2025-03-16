@@ -1,26 +1,20 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "@/components/auth/AuthProvider";
 import DashboardSidebar from "../dashboard/DashboardSidebar";
 
-interface PatientLayoutProps {
-  patientName?: string;
-  patientAvatar?: string;
-  activePath?: string;
-}
+const PatientLayout = () => {
+  const { user } = useAuth();
+  const location = useLocation();
 
-const PatientLayout = ({
-  patientName = "Sarah Johnson",
-  patientAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
-  activePath = "/dashboard",
-}: PatientLayoutProps) => {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <DashboardSidebar
         userType="patient"
-        userName={patientName}
-        userAvatar={patientAvatar}
-        activePath={activePath}
+        userName={user?.name || "Patient"}
+        userAvatar={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=patient"}
+        activePath={location.pathname}
       />
 
       {/* Main content */}

@@ -10,15 +10,20 @@ export async function setupDemoData() {
     // Check if we already have profiles
     const { data: existingProfiles, error: profilesError } = await supabase
       .from("profiles")
-      .select("id")
+      .select("id, role")
+      .eq("role", "patient")
       .limit(1);
 
     if (profilesError) throw profilesError;
 
-    // If we already have data, don't insert demo data again
+    // If we already have data, return the existing patient ID
     if (existingProfiles && existingProfiles.length > 0) {
-      console.log("Demo data already exists, skipping setup");
-      return { success: true, message: "Demo data already exists" };
+      console.log("Demo data already exists, using existing patient");
+      return { 
+        success: true, 
+        message: "Using existing demo data",
+        patientId: existingProfiles[0].id
+      };
     }
 
     // Create a demo patient profile
@@ -29,7 +34,8 @@ export async function setupDemoData() {
         email: "sarah.johnson@example.com",
         role: "patient",
       })
-      .select();
+      .select()
+      .single();
 
     if (patientError) throw patientError;
 
@@ -41,12 +47,13 @@ export async function setupDemoData() {
         email: "dr.chen@example.com",
         role: "doctor",
       })
-      .select();
+      .select()
+      .single();
 
     if (doctorError) throw doctorError;
 
-    const patientId = patientData[0].id;
-    const doctorId = doctorData[0].id;
+    const patientId = patientData.id;
+    const doctorId = doctorData.id;
 
     // Insert sample data
     await Promise.all([

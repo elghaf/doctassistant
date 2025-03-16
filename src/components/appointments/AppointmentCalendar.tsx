@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { format, addDays, isSameDay } from "date-fns";
 import { CalendarIcon, Clock, Users, PlusCircle } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Appointment {
   id: string;
@@ -62,6 +63,8 @@ const AppointmentCalendar = ({
     notes: "",
   });
 
+  const { toast } = useToast();
+
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
   };
@@ -72,13 +75,24 @@ const AppointmentCalendar = ({
   };
 
   const handleScheduleSubmit = () => {
+    if (!newAppointment.doctor) {
+      // Show error if doctor is not selected
+      toast({
+        title: "Error",
+        description: "Please select a doctor for your appointment",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     onSchedule({
-      date: selectedDate || new Date(),
-      time: newAppointment.time,
-      doctor: newAppointment.doctor,
-      type: newAppointment.type,
+      appointment_date: selectedDate || new Date(), // Use appointment_date instead of date
+      time_slot: newAppointment.time, // Use time_slot instead of time
+      doctor_id: newAppointment.doctor, // Use doctor_id instead of doctor
+      appointment_type: newAppointment.type, // Use appointment_type instead of type
       notes: newAppointment.notes,
     });
+    
     setIsScheduleDialogOpen(false);
     // Reset form
     setNewAppointment({

@@ -63,9 +63,22 @@ export const appointmentsApi = {
   },
 
   scheduleAppointment: async (appointmentData: any) => {
+    // Ensure the data matches the database schema
+    const appointment = {
+      patient_id: appointmentData.patient_id,
+      doctor_id: appointmentData.doctor_id,
+      appointment_date: appointmentData.appointment_date,
+      time_slot: appointmentData.time_slot,
+      appointment_type: appointmentData.appointment_type,
+      reason: appointmentData.reason,
+      notes: appointmentData.notes,
+      duration: appointmentData.duration || 30,
+      status: 'pending'
+    };
+
     const { data, error } = await supabase
       .from("appointments")
-      .insert(appointmentData)
+      .insert(appointment)
       .select();
 
     if (error) throw error;
@@ -73,17 +86,13 @@ export const appointmentsApi = {
     // Create notifications for both patient and doctor
     try {
       await createAppointmentNotifications(
-        appointmentData.patient_id,
-        appointmentData.doctor_id,
+        appointment.patient_id,
+        appointment.doctor_id,
         data[0],
-        "created",
+        "created"
       );
     } catch (notificationError) {
-      console.error(
-        "Error creating appointment notifications:",
-        notificationError,
-      );
-      // Don't throw here, we still want to return the appointment data
+      console.error("Error creating appointment notifications:", notificationError);
     }
 
     return data[0];
@@ -312,17 +321,39 @@ export const reportsApi = {
 // Patient Profile API
 export const profileApi = {
   getPatientProfile: async (patientId: string) => {
-    const { data, error } = await supabase
+    // Validate UUID format
+    if (!patientId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(patientId)) {
+      throw new Error("Invalid patient ID format. Must be a valid UUID.");
+    }
+    
+    // First try to get from profiles table
+    const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", patientId)
       .single();
-
-    if (error) throw error;
-    return data;
+      
+    if (profileError) {
+      // If not found in profiles, try patients table
+      const { data: patientData, error: patientError } = await supabase
+        .from("patients")
+        .select("*")
+        .eq("user_id", patientId)
+        .single();
+        
+      if (patientError) throw patientError;
+      return patientData;
+    }
+    
+    return profileData;
   },
 
   updatePatientProfile: async (patientId: string, profileData: any) => {
+    // Validate UUID format
+    if (!patientId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(patientId)) {
+      throw new Error("Invalid patient ID format. Must be a valid UUID.");
+    }
+    
     const { data, error } = await supabase
       .from("profiles")
       .update(profileData)

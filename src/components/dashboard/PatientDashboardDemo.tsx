@@ -1,16 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { usePatientData } from "@/hooks/usePatientData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import UpcomingAppointments from "@/components/appointments/UpcomingAppointments";
-import { v4 as uuidv4 } from "uuid";
+import { setupDemoData } from "@/lib/setupDemoData";
 
 export default function PatientDashboardDemo() {
-  // Generate a valid UUID for demo purposes
-  const demoPatientId = uuidv4();
+  const [demoPatientId, setDemoPatientId] = useState<string | null>(null);
+  const [setupError, setSetupError] = useState<string | null>(null);
+  const [isSettingUp, setIsSettingUp] = useState(true);
+
+  useEffect(() => {
+    const initializeDemoData = async () => {
+      try {
+        setIsSettingUp(true);
+        const result = await setupDemoData();
+        if (result.success && result.patientId) {
+          setDemoPatientId(result.patientId);
+        } else {
+          setSetupError(result.error?.message || "Failed to set up demo data");
+        }
+      } catch (error) {
+        setSetupError(error instanceof Error ? error.message : "Unknown error occurred");
+      } finally {
+        setIsSettingUp(false);
+      }
+    };
+
+    initializeDemoData();
+  }, []);
 
   const {
     loading,
@@ -19,13 +40,34 @@ export default function PatientDashboardDemo() {
     appointments,
     questionnaires,
     reports,
-  } = usePatientData(demoPatientId);
+  } = usePatientData(demoPatientId || "");
+
+  if (isSettingUp) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+          <p className="mt-4 text-muted-foreground">Setting up demo data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (setupError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Setup Error</AlertTitle>
+        <AlertDescription>{setupError}</AlertDescription>
+      </Alert>
+    );
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mx-auto"></div>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
           <p className="mt-4 text-muted-foreground">Loading patient data...</p>
         </div>
       </div>
@@ -34,27 +76,10 @@ export default function PatientDashboardDemo() {
 
   if (error) {
     return (
-      <Alert variant="destructive" className="mb-6">
+      <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-          {error.message || "Failed to load patient data"}
-          <div className="mt-2">
-            <p className="text-sm text-muted-foreground">
-              Note: This is a demo application. You're seeing this error because
-              the patient ID format is invalid or the patient doesn't exist in
-              the database.
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              For demo purposes, we're using a randomly generated UUID:{" "}
-              {demoPatientId}
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              To see actual data, you need to set up demo data first by running
-              the setupDemoData function and using the returned patientId.
-            </p>
-          </div>
-        </AlertDescription>
+        <AlertDescription>{error.message}</AlertDescription>
       </Alert>
     );
   }

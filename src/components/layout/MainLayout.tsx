@@ -2,6 +2,9 @@ import React, { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "./Header";
 import PatientSidebar from "./PatientSidebar";
+import { useAuth } from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { toast } from "../hooks/useToast";
 
 interface MainLayoutProps {
   children?: ReactNode;
@@ -12,14 +15,24 @@ interface MainLayoutProps {
   pendingQuestionnaires?: number;
 }
 
-const MainLayout = ({
-  children,
-  userRole = "patient",
-  userName = "Sarah Johnson",
-  userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
-  notificationCount = 3,
-  pendingQuestionnaires = 2,
-}: MainLayoutProps) => {
+const MainLayout = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error during logout:", error);
+      toast({
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -50,12 +63,12 @@ const MainLayout = ({
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
       <Header
-        userName={userName}
-        userRole={userRole}
-        userAvatar={userAvatar}
+        userName={user?.name}
+        userRole={user?.role}
+        userAvatar={user?.avatar}
         notificationCount={notificationCount}
         onLogin={() => console.log("Login clicked")}
-        onLogout={() => console.log("Logout clicked")}
+        onLogout={handleLogout}
         onNotificationsClick={() => console.log("Notifications clicked")}
       />
 
@@ -85,3 +98,4 @@ const MainLayout = ({
 };
 
 export default MainLayout;
+

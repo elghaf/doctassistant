@@ -133,19 +133,43 @@ export function usePatientData(patientId: string) {
   // Functions to update data
   const scheduleAppointment = async (appointmentData: any) => {
     try {
-      if (!isValidUUID(patientId)) {
-        throw new Error("Invalid patient ID format. Must be a valid UUID.");
+      console.log("Scheduling appointment with data:", appointmentData);
+      
+      // Validate required fields
+      if (!appointmentData.doctor_id) {
+        throw new Error("Doctor ID is required for scheduling an appointment");
       }
+      
+      if (!appointmentData.appointment_date) {
+        throw new Error("Appointment date is required");
+      }
+      
+      // Ensure we're using the correct column names and all required fields
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert({
+          patient_id: patientId,
+          doctor_id: appointmentData.doctor_id,
+          appointment_date: appointmentData.appointment_date,
+          time_slot: appointmentData.time_slot || "9:00 AM",
+          appointment_type: appointmentData.appointment_type || "Check-up",
+          status: appointmentData.status || 'scheduled',
+          notes: appointmentData.notes || '',
+          duration: appointmentData.duration || 30,
+        })
+        .select();
 
-      const newAppointment = await appointmentsApi.scheduleAppointment({
-        ...appointmentData,
-        patient_id: patientId,
-      });
-      setAppointments((prev) => [...prev, newAppointment]);
-      return newAppointment;
-    } catch (err) {
-      console.error("Error scheduling appointment:", err);
-      throw err;
+      if (error) {
+        console.error("Database error when scheduling appointment:", error);
+        throw error;
+      }
+      
+      // Add the new appointment to the state
+      setAppointments(prev => [...prev, data[0]]);
+      return data[0];
+    } catch (error) {
+      console.error('Error scheduling appointment:', error);
+      throw error;
     }
   };
 
@@ -196,6 +220,18 @@ export function usePatientData(patientId: string) {
     }
   };
 
+  const refetchAppointments = async () => {
+    // Implement the logic to fetch updated appointments
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*, profiles(*)')
+      .eq('patient_id', patientId)
+      .order('appointment_date', { ascending: true });
+
+    if (error) throw error;
+    setAppointments(data || []);
+  };
+
   return {
     loading,
     error,
@@ -206,5 +242,6 @@ export function usePatientData(patientId: string) {
     scheduleAppointment,
     cancelAppointment,
     submitQuestionnaire,
+    refetchAppointments,
   };
 }

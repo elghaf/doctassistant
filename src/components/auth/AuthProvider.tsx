@@ -1,87 +1,76 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 interface User {
-  role: "patient" | "doctor";
   id: string;
   name: string;
-  email: string;
+  role: "patient" | "doctor" | "admin";
   avatar?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isSignedIn: boolean;
-  signIn: (
-    email: string,
-    password: string,
-    role: "patient" | "doctor",
-  ) => Promise<void>;
-  signUp: (
-    email: string,
-    password: string,
-    name: string,
-    role: "patient" | "doctor",
-  ) => Promise<void>;
+  loading: boolean;
+  error: Error | null;
+  signIn: (email: string, password: string, role: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, role: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  // Check for existing session on load
-  useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
+  const checkUser = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
       if (session?.user) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
+        // Fetch additional user data from your profiles table
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')  // Changed from 'users' to 'profiles' based on your schema
+          .select('*')
+          .eq('id', session.user.id)
           .single();
 
-        if (profileData) {
+        if (userError) throw userError;
+
+        if (userData) {
           setUser({
-            id: session.user.id,
-            name: profileData.name,
-            email: profileData.email,
-            role: profileData.role,
+            id: userData.id,
+            name: userData.name,
+            role: userData.role,
+            avatar: userData.avatar,
           });
-        }
-      }
-
-      setIsLoading(false);
-    };
-
-    checkSession();
-
-    // Set up auth state change listener
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
-
-        if (profileData) {
-          setUser({
-            id: session.user.id,
-            name: profileData.name,
-            email: profileData.email,
-            role: profileData.role,
-          });
+          setIsSignedIn(true);
         }
       } else {
         setUser(null);
+        setIsSignedIn(false);
+      }
+    } catch (error) {
+      console.error('Error checking user:', error);
+      setError(error as Error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        checkUser();
+      } else {
+        setUser(null);
+        setIsSignedIn(false);
+        setLoading(false);
       }
     });
 
@@ -90,186 +79,120 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const signUp = async (
-    email: string,
-    password: string,
-    name: string,
-    role: "patient" | "doctor",
-  ) => {
+  const signIn = async (email: string, password: string, role: string) => {
     try {
-      // First, create the auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          data: {
-            name,
-            role,
-          },
-        },
       });
-
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("No user data returned");
-
-      // Create profile record
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          id: authData.user.id,
-          name,
-          email,
-          role,
-        })
-        .select();
-
-      if (profileError) {
-        console.error("Profile creation error:", profileError);
-        // Don't throw here, continue with the process
+      if (error) throw error;
+      
+      // Verify the user's role matches what they selected
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+        
+      if (userError) throw userError;
+      
+      if (userData.role !== role) {
+        // If roles don't match, sign out and throw an error
+        await supabase.auth.signOut();
+        throw new Error(`Invalid role selected. You are registered as a ${userData.role}.`);
       }
-
-      // Create role-specific record
-      const table = role === "patient" ? "patients" : "doctors";
-      const { error: roleError } = await supabase
-        .from(table)
-        .insert({
-          user_id: authData.user.id,
-          name,
-          email,
-          role,
-        })
-        .select();
-
-      if (roleError) {
-        console.error(`${role} record creation error:`, roleError);
-        // Don't throw here, continue with the process
-      }
-
-      // For development purposes, we'll set the user immediately
-      // In production, you'd typically wait for email confirmation
-      setUser({
-        id: authData.user.id,
-        name,
-        email,
-        role,
-      });
-
-      return;
     } catch (error) {
-      console.error("SignUp error:", error);
+      console.error('Error signing in:', error);
+      setError(error as Error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const signIn = async (
-    email: string,
-    password: string,
-    role: "patient" | "doctor",
-  ) => {
+  const signUp = async (email: string, password: string, name: string, role: string) => {
     try {
-      const { data: authData, error: authError } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
+      setLoading(true);
+      
+      // 1. Create the auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      
       if (authError) throw authError;
-
-      if (authData.user) {
-        // Try to get profile data, but don't fail if it doesn't exist yet
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", authData.user.id)
-          .single();
-
-        if (profileError) {
-          // If profile doesn't exist, create it
-          if (profileError.code === "PGRST116") {
-            const userData = authData.user.user_metadata || {};
-            const userName = userData.name || email.split("@")[0];
-
-            await supabase
-              .from("profiles")
-              .insert({
-                id: authData.user.id,
-                name: userName,
-                email: authData.user.email,
-                role: role,
-              })
-              .select();
-
-            // Also create role-specific record
-            const table = role === "patient" ? "patients" : "doctors";
-            await supabase
-              .from(table)
-              .insert({
-                user_id: authData.user.id,
-                name: userName,
-                email: authData.user.email,
-                role: role,
-              })
-              .select();
-
-            setUser({
-              id: authData.user.id,
-              name: userName,
-              email: authData.user.email || "",
-              role: role,
-            });
-
-            return;
-          } else {
-            throw profileError;
-          }
-        }
-
-        // If we have profile data, verify the role matches
-        if (profileData && profileData.role !== role) {
-          await supabase.auth.signOut();
-          throw new Error(`You are not registered as a ${role}`);
-        }
-
-        setUser({
+      if (!authData.user) throw new Error("Failed to create user");
+      
+      // 2. Create the profile record
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
           id: authData.user.id,
-          name: profileData?.name || "",
-          email: profileData?.email || "",
-          role: profileData?.role || role,
+          name,
+          role,
+          email,
+          created_at: new Date().toISOString(),
         });
+      
+      if (profileError) {
+        // If profile creation fails, we should clean up the auth user
+        console.error("Error creating profile, cleaning up auth user");
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        throw profileError;
       }
+      
+      // 3. Return success
+      return authData;
     } catch (error) {
-      console.error("SignIn error:", error);
+      console.error('Error signing up:', error);
+      setError(error as Error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    setUser(null);
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+      setIsSignedIn(false);
+    } catch (error) {
+      console.error('Error signing out:', error);
+      setError(error as Error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const value = {
+    user,
+    isSignedIn,
+    loading,
+    error,
+    signIn,
+    signUp,
+    signOut,
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isSignedIn: !!user,
-        signIn,
-        signUp,
-        signOut,
-      }}
-    >
-      {!isLoading && children}
+    <AuthContext.Provider value={value}>
+      {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
 
-export const useCustomAuth = useAuth;
+// Make sure to export the context if needed elsewhere
+export { AuthContext };
