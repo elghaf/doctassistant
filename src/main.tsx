@@ -7,6 +7,7 @@ import { AuthProvider } from "./components/auth/AuthProvider";
 import "./lib/tempo-devtools";
 import { setupDemoData } from "./lib/setupDemoData";
 
+
 // Initialize Tempo Devtools
 // This will use the mock implementation from our local file
 TempoDevtools.init();
