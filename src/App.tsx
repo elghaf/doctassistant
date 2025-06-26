@@ -7,6 +7,7 @@ import DoctorDashboard from "@/pages/DoctorDashboardPage";
 import PatientDashboard from "@/pages/PatientDashboardPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
+
 function App() {
   const { loading } = useAuth();
 
